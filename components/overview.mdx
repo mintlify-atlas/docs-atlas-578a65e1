@@ -1,0 +1,68 @@
+---
+title: Components Overview
+description: Visual components for the Progress Overlay project
+---
+
+## Component Library
+
+The Progress Overlay project includes a collection of animated visual components built with React, Three.js, and SVG. These components are designed to create engaging Twitch overlays with interactive effects.
+
+## Available Components
+
+<CardGroup cols={2}>
+  <Card title="ASCIIText" icon="font" href="/components/ascii-text">
+    3D text rendered with ASCII art effects using Three.js and custom shaders
+  </Card>
+  
+  <Card title="CurvedLoop" icon="circle-notch" href="/components/curved-loop">
+    Animated marquee text along a curved SVG path with drag interaction
+  </Card>
+  
+  <Card title="Noise" icon="grain" href="/components/noise">
+    Canvas-based animated grain effect for visual texture
+  </Card>
+  
+  <Card title="Progress" icon="chart-line" href="/components/progress">
+    Radix UI progress bar with customizable colors
+  </Card>
+  
+  <Card title="ProjectProgress" icon="tasks" href="/components/project-progress">
+    GitHub issue completion tracker with visual progress display
+  </Card>
+</CardGroup>
+
+## Component Categories
+
+### Visual Effects
+
+- **ASCIIText** - Three.js-powered 3D ASCII text with shader effects
+- **Noise** - Animated grain overlay for texture
+
+### Progress Tracking
+
+- **Progress** - Basic progress bar primitive
+- **ProjectProgress** - GitHub issue tracking with progress visualization
+
+### UI Components
+
+- **CurvedLoop** - Curved text marquee with interactive dragging
+
+## Usage
+
+All components are client-side React components built with TypeScript. They're designed to be used in Next.js pages with the `"use client"` directive.
+
+```tsx
+import ASCIIText from "@/components/ASCIIText";
+import CurvedLoop from "@/components/CurvedLoop";
+import Noise from "@/components/Noise";
+
+export default function MyOverlay() {
+  return (
+    <>
+      <ASCIIText text="Hello World!" />
+      <CurvedLoop marqueeText="Streaming Now" />
+      <Noise />
+    </>
+  );
+}
+```

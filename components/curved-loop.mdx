@@ -1,0 +1,165 @@
+---
+title: CurvedLoop
+description: Animated marquee text along a curved SVG path
+---
+
+## Overview
+
+The `CurvedLoop` component displays marquee text animated along a curved SVG path. It supports bidirectional scrolling, drag interaction, and automatic text repetition to create a seamless looping effect.
+
+## Props
+
+<ParamField path="marqueeText" type="string" default="">
+  The text content to display in the marquee. Trailing spaces are normalized to non-breaking spaces.
+</ParamField>
+
+<ParamField path="speed" type="number" default={2}>
+  Animation speed in pixels per frame. Positive values scroll in the current direction.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS class names to apply to the text element (e.g., for custom fill colors).
+</ParamField>
+
+<ParamField path="curveAmount" type="number" default={400}>
+  Vertical offset for the curve in SVG units. Higher values create more pronounced curves.
+</ParamField>
+
+<ParamField path="direction" type="'left' | 'right'" default="left">
+  Initial scroll direction for the marquee animation.
+</ParamField>
+
+<ParamField path="interactive" type="boolean" default={true}>
+  Enable or disable drag interaction. When enabled, users can drag to scroll and change direction.
+</ParamField>
+
+## Usage Example
+
+From `~/workspace/source/app/name/page.tsx:5`:
+
+```tsx
+import CurvedLoop from "@/components/CurvedLoop";
+
+export default function NameMarquee() {
+  return (
+    <CurvedLoop
+      marqueeText=" ♥ Chris__Codes"
+      speed={2.2}
+      curveAmount={200}
+      interactive
+      className="fill-pink-500!"
+    />
+  );
+}
+```
+
+## Interactive Features
+
+### Drag Interaction
+
+When `interactive={true}`, users can:
+1. **Click and drag** to manually scroll the text
+2. **Change direction** - The scroll direction changes based on drag velocity
+3. **Resume animation** - Auto-scrolling resumes in the new direction after releasing
+
+The cursor changes to `grab` when hovering and `grabbing` while dragging.
+
+## Customization Examples
+
+<Tabs>
+  <Tab title="Basic">
+    ```tsx
+    <CurvedLoop marqueeText="Hello World" />
+    ```
+  </Tab>
+  
+  <Tab title="Custom Speed & Direction">
+    ```tsx
+    <CurvedLoop 
+      marqueeText="Fast Scrolling"
+      speed={5}
+      direction="right"
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Custom Curve">
+    ```tsx
+    <CurvedLoop 
+      marqueeText="Subtle Curve"
+      curveAmount={100}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Non-Interactive">
+    ```tsx
+    <CurvedLoop 
+      marqueeText="Read Only"
+      interactive={false}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Custom Colors">
+    ```tsx
+    <CurvedLoop 
+      marqueeText="Colorful Text"
+      className="fill-cyan-400"
+    />
+    ```
+  </Tab>
+</Tabs>
+
+## Technical Details
+
+### SVG Path Animation
+
+The component uses SVG `<textPath>` to follow a curved path:
+```typescript
+const pathD = `M-100,40 Q500,${40 + curveAmount} 1540,40`;
+```
+
+This creates a quadratic Bézier curve with a control point offset by `curveAmount`.
+
+### Text Repetition
+
+The text is automatically repeated to fill the entire path:
+```typescript
+const totalText = textLength
+  ? Array(Math.ceil(1800 / textLength) + 2)
+      .fill(text)
+      .join("")
+  : text;
+```
+
+### Animation Loop
+
+The component uses `requestAnimationFrame` for smooth 60fps animation:
+```typescript
+let newOffset = currentOffset + delta;
+const wrapPoint = spacing;
+if (newOffset <= -wrapPoint) newOffset += wrapPoint;
+if (newOffset > 0) newOffset -= wrapPoint;
+```
+
+The offset wraps seamlessly at the text width boundary.
+
+### Viewport
+
+The SVG uses a fixed viewBox of `"0 0 1440 120"` and scales responsively to fill the container width with aspect ratio 100:12.
+
+## Styling
+
+The component applies these default styles:
+- **Font**: Bold, uppercase, 6rem size
+- **Text color**: White (customizable via `className`)
+- **Layout**: Centered horizontally and vertically
+- **User selection**: Disabled
+
+## Performance Notes
+
+- Text measurement is cached to avoid repeated calculations
+- Animation runs only when not dragging
+- Component is hidden until text measurement completes
+- Uses pointer capture for reliable drag tracking

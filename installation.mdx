@@ -1,0 +1,229 @@
+---
+title: Installation
+description: Step-by-step guide to install and configure Progress Overlay for your development environment
+---
+
+## Prerequisites
+
+Before installing Progress Overlay, ensure you have the following:
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Node.js version 20.x or higher is required. The project is tested with Node.js v20+.
+  </Card>
+  <Card title="GitHub Token" icon="key">
+    A GitHub Personal Access Token with `repo` scope to access your repository's issues.
+  </Card>
+  <Card title="Package Manager" icon="box">
+    npm, yarn, pnpm, or bun for installing dependencies.
+  </Card>
+  <Card title="Git" icon="git-alt">
+    Git installed for cloning the repository.
+  </Card>
+</CardGroup>
+
+### Verify Node.js Installation
+
+Check your Node.js version:
+
+```bash
+node --version
+```
+
+You should see `v20.0.0` or higher. If you need to upgrade, visit [nodejs.org](https://nodejs.org/).
+
+### Create GitHub Personal Access Token
+
+<Steps>
+  <Step title="Navigate to GitHub Settings">
+    Go to GitHub → Settings → Developer settings → [Personal access tokens → Tokens (classic)](https://github.com/settings/tokens)
+  </Step>
+  
+  <Step title="Generate New Token">
+    Click **Generate new token (classic)** and provide a descriptive note like "Progress Overlay Access"
+  </Step>
+  
+  <Step title="Select Scopes">
+    Check the **`repo`** scope to grant full access to your repositories (required to read issues)
+    
+    <Warning>
+      The `repo` scope provides full repository access. Keep your token secure and never commit it to version control.
+    </Warning>
+  </Step>
+  
+  <Step title="Generate and Copy Token">
+    Click **Generate token** and immediately copy the token. You won't be able to see it again!
+  </Step>
+</Steps>
+
+## Installation Steps
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone the Progress Overlay repository to your local machine:
+    
+    ```bash
+    git clone https://github.com/christian1koch/progress-overlay.git
+    cd progress-overlay
+    ```
+  </Step>
+  
+  <Step title="Install Dependencies">
+    Install the project dependencies using your preferred package manager:
+    
+    <CodeGroup>
+    ```bash npm
+    npm install
+    ```
+    
+    ```bash yarn
+    yarn install
+    ```
+    
+    ```bash pnpm
+    pnpm install
+    ```
+    
+    ```bash bun
+    bun install
+    ```
+    </CodeGroup>
+    
+    This will install all required dependencies including:
+    - Next.js 16 with React 19
+    - Three.js for 3D graphics
+    - Octokit for GitHub API integration
+    - Tailwind CSS for styling
+    - GSAP for animations
+    - Radix UI components
+  </Step>
+  
+  <Step title="Configure Environment Variables">
+    Create a `.env.local` file in the root directory:
+    
+    ```bash
+    touch .env.local
+    ```
+    
+    Add your GitHub configuration:
+    
+    ```bash .env.local
+    GITHUB_TOKEN=your_github_personal_access_token_here
+    ```
+    
+    <Note>
+      Replace `your_github_personal_access_token_here` with the token you generated in the prerequisites step.
+    </Note>
+  </Step>
+  
+  <Step title="Configure Repository Details">
+    Open `app/lib/actions.ts` and update the repository owner and name to match your GitHub repository:
+    
+    ```typescript app/lib/actions.ts
+    const { data } = await octokit.rest.issues.listForRepo({
+        owner: "your-github-username",  // Update this
+        repo: "your-repository-name",    // Update this
+        state: "all",
+    });
+    ```
+    
+    <Info>
+      This configuration determines which GitHub repository's issues will be displayed in your overlay.
+    </Info>
+  </Step>
+  
+  <Step title="Start the Development Server">
+    Launch the Next.js development server:
+    
+    <CodeGroup>
+    ```bash npm
+    npm run dev
+    ```
+    
+    ```bash yarn
+    yarn dev
+    ```
+    
+    ```bash pnpm
+    pnpm dev
+    ```
+    
+    ```bash bun
+    bun dev
+    ```
+    </CodeGroup>
+    
+    The application will start on [http://localhost:3000](http://localhost:3000)
+  </Step>
+</Steps>
+
+## Verify Installation
+
+Confirm that your Progress Overlay is working correctly:
+
+<Steps>
+  <Step title="Check the Development Server">
+    Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
+  </Step>
+  
+  <Step title="Test Overlay Pages">
+    Visit each overlay page to ensure they're rendering correctly:
+    
+    - [http://localhost:3000/name](http://localhost:3000/name) - Name marquee overlay
+    - [http://localhost:3000/background](http://localhost:3000/background) - ASCII art background
+    - [http://localhost:3000/project-info](http://localhost:3000/project-info) - Project information
+    - [http://localhost:3000/project-info/progress](http://localhost:3000/project-info/progress) - Progress bar
+  </Step>
+  
+  <Step title="Verify GitHub Integration">
+    Check the `/project-info` or `/project-info/progress` pages to confirm that your GitHub issues are being fetched and displayed.
+    
+    If you see "No Issues" or no data appears, verify:
+    - Your `GITHUB_TOKEN` is correctly set in `.env.local`
+    - The token has the `repo` scope
+    - The owner and repo names in `app/lib/actions.ts` are correct
+    - Your repository has at least one issue
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### GitHub API Connection Issues
+
+If issues aren't loading:
+
+<Warning>
+  Check the terminal where your dev server is running for error messages. GitHub API errors will appear there.
+</Warning>
+
+1. **Invalid Token**: Verify your token is correctly copied to `.env.local` without extra spaces
+2. **Insufficient Permissions**: Ensure your token has the `repo` scope
+3. **Wrong Repository**: Confirm owner and repo names match your GitHub repository exactly
+4. **Rate Limiting**: GitHub has API rate limits. Wait a few minutes if you're rate-limited
+
+### Port Already in Use
+
+If port 3000 is already in use, you can start the server on a different port:
+
+```bash
+PORT=3001 npm run dev
+```
+
+### Font Loading Issues
+
+The ASCII text component uses IBM Plex Mono font. If you see rendering issues:
+
+1. Check your internet connection (fonts load from Google Fonts)
+2. Clear your browser cache
+3. Wait a few seconds for fonts to load on first render
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start Guide" icon="rocket" href="/quickstart">
+    Follow our quick start tutorial to get your overlay streaming-ready in 5 minutes
+  </Card>
+  <Card title="OBS Setup" icon="display" href="/guides/obs-setup">
+    Learn how to add your overlay pages as browser sources in OBS Studio
+  </Card>
+</CardGroup>

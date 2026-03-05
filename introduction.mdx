@@ -1,0 +1,90 @@
+---
+title: Introduction
+description: A Next.js Twitch overlay that displays GitHub repository progress with stunning animated visual components
+---
+
+## What is Progress Overlay?
+
+Progress Overlay is a highly customizable Twitch streaming overlay built with Next.js that visualizes your GitHub repository progress in real-time. It's designed to keep your stream viewers engaged by displaying dynamic project information, task completion status, and eye-catching visual effects—all synchronized with your GitHub issues.
+
+<Info>
+  Perfect for developers who stream their coding sessions and want to share their project progress in an engaging, visual way.
+</Info>
+
+## Who is it for?
+
+Progress Overlay is ideal for:
+
+- **Streamer Developers** who want to showcase their project progress during live coding sessions
+- **Content Creators** building developer communities and sharing their development journey
+- **Open Source Maintainers** demonstrating project roadmaps and task completion in real-time
+- **DevRel Professionals** creating engaging content around software development
+
+## Key Capabilities
+
+<CardGroup cols={2}>
+  <Card title="Real-Time GitHub Integration" icon="github">
+    Automatically fetches and displays GitHub issues from your repository, tracking open and completed tasks.
+  </Card>
+  <Card title="Multiple Overlay Pages" icon="grid">
+    Four distinct overlay pages for different streaming scenarios: name display, background effects, project info, and progress tracking.
+  </Card>
+  <Card title="Stunning Visual Effects" icon="wand-magic-sparkles">
+    Animated components including curved marquee text, ASCII art effects with Three.js, and interactive visual elements.
+  </Card>
+  <Card title="OBS Browser Source Ready" icon="display">
+    Designed specifically for OBS Studio browser sources with transparent backgrounds and optimized rendering.
+  </Card>
+</CardGroup>
+
+## Technology Stack
+
+Progress Overlay is built with modern web technologies:
+
+- **[Next.js 16](https://nextjs.org/)** - React framework with server-side rendering and server actions
+- **[React 19](https://react.dev/)** - Latest React version with modern hooks and patterns
+- **[Three.js](https://threejs.org/)** - 3D graphics library for stunning visual effects
+- **[Octokit](https://github.com/octokit/rest.js)** - Official GitHub REST API client for fetching repository data
+- **[Tailwind CSS 4](https://tailwindcss.com/)** - Utility-first CSS framework for styling
+- **[GSAP](https://greensock.com/gsap/)** - Professional-grade animation library
+- **[Radix UI](https://www.radix-ui.com/)** - Accessible UI component primitives
+
+<Note>
+  The project uses Next.js Server Actions for secure GitHub API interactions, keeping your GitHub token safe on the server side.
+</Note>
+
+## Available Overlay Pages
+
+Progress Overlay provides four distinct pages that can be used as browser sources:
+
+### `/name` - Curved Marquee Name Display
+Displays your streamer name in a curved, animated marquee with interactive drag controls. The text flows along a curved path and responds to mouse movement.
+
+### `/background` - ASCII Art Background
+Creates stunning ASCII art text effects using Three.js shaders with wave animations and interactive 3D rotation based on mouse position.
+
+### `/project-info` - Project Information Overlay
+Shows a scrolling marquee with your GitHub repository link and displays all issues as checkboxes. Completed issues appear checked and struck-through, while open issues remain unchecked.
+
+### `/project-info/progress` - Progress Bar Display
+Displays a large, animated progress bar showing the completion percentage of your GitHub issues with a "X / Y Tasks completed" counter.
+
+## Benefits
+
+- **Engage Your Audience**: Keep viewers informed about what you're building and how far along you are
+- **Visual Appeal**: Add professional, animated overlays that make your stream stand out
+- **Real-Time Updates**: Issue data automatically refreshes every 10 seconds to show current progress
+- **Easy Setup**: Simple configuration with just a GitHub token and repository details
+- **Fully Customizable**: Built with React components that you can easily modify to match your brand
+
+## How It Works
+
+1. **Connect to GitHub**: Configure your GitHub personal access token
+2. **Fetch Issues**: The app uses Octokit to fetch all issues (open and closed) from your repository
+3. **Display Progress**: Visual components render your project status with animations
+4. **Auto-Refresh**: Data updates automatically at configurable intervals (default: 10 seconds)
+5. **Stream Integration**: Add pages as browser sources in OBS Studio
+
+<Info>
+  Ready to get started? Continue to the [Installation](/installation) guide to set up your Progress Overlay.
+</Info>

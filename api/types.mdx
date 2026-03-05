@@ -1,0 +1,80 @@
+---
+title: 'Types'
+description: 'TypeScript types and interfaces used in the Progress Overlay'
+---
+
+## Issue
+
+The main interface representing a simplified issue object used throughout the application.
+
+<ResponseField name="id" type="number" required>
+  Unique identifier for the issue
+</ResponseField>
+
+<ResponseField name="title" type="string" required>
+  The title text of the issue
+</ResponseField>
+
+<ResponseField name="isCompleted" type="boolean" required>
+  Whether the issue is completed (closed) or not
+</ResponseField>
+
+### Usage Example
+
+```typescript
+import { Issue } from "@/lib/types";
+
+const issue: Issue = {
+  id: 1,
+  title: "Add authentication",
+  isCompleted: false
+};
+```
+
+---
+
+## GithubIssue
+
+The interface representing the raw GitHub issue data fetched from the GitHub API.
+
+<ResponseField name="id" type="number" required>
+  Unique identifier from GitHub
+</ResponseField>
+
+<ResponseField name="state" type="string" required>
+  The state of the issue (e.g., "open", "closed")
+</ResponseField>
+
+<ResponseField name="title" type="string" required>
+  The title text of the GitHub issue
+</ResponseField>
+
+### Usage Example
+
+```typescript
+import { GithubIssue } from "@/lib/types";
+
+const githubIssue: GithubIssue = {
+  id: 123,
+  state: "closed",
+  title: "Add authentication"
+};
+```
+
+### Converting GitHub Issues to Issues
+
+You can convert a `GithubIssue` to an `Issue` using the utility function:
+
+```typescript
+import { githubIssuesToIssues } from "@/lib/utils";
+import { GithubIssue } from "@/lib/types";
+
+const githubIssue: GithubIssue = {
+  id: 123,
+  state: "closed",
+  title: "Add authentication"
+};
+
+const issue = githubIssuesToIssues(githubIssue);
+// Result: { id: 123, title: "Add authentication", isCompleted: true }
+```

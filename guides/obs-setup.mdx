@@ -1,0 +1,506 @@
+---
+title: OBS Studio Setup
+description: Configure OBS Studio to display your Progress Overlay during streams
+---
+
+Learn how to add the Progress Overlay to OBS Studio (or other streaming software) as a browser source.
+
+## Prerequisites
+
+- OBS Studio installed ([Download here](https://obsproject.com/))
+- Progress Overlay running locally (`npm run dev`)
+- GitHub integration configured ([Setup guide](/guides/github-integration))
+
+## Available Overlay Routes
+
+The Progress Overlay provides multiple routes, each displaying different content:
+
+| Route | Description | Use Case |
+|-------|-------------|----------|
+| `/name` | Curved, interactive name marquee | Display your stream name or handle |
+| `/background` | ASCII art text background | Decorative background layer |
+| `/project-info` | Project title with task checkboxes | Show all tasks at once |
+| `/project-info/progress` | Progress bar with completion stats | Compact progress indicator |
+
+## Basic OBS Setup
+
+<Steps>
+  <Step title="Start Your Development Server">
+    Ensure the overlay is running:
+
+    ```bash
+    npm run dev
+    ```
+
+    The server should be accessible at `http://localhost:3000`
+  </Step>
+
+  <Step title="Add a Browser Source in OBS">
+    1. In OBS, click the **+** button in the Sources panel
+    2. Select **Browser**
+    3. Give it a descriptive name (e.g., "Progress Overlay")
+    4. Click **OK**
+  </Step>
+
+  <Step title="Configure Browser Source Settings">
+    Enter the following settings:
+
+    **URL**: `http://localhost:3000/project-info/progress`
+
+    **Width**: `1920`
+
+    **Height**: `1080`
+
+    **FPS**: `30` (or `60` for smoother animations)
+
+    **Custom CSS**: Leave empty (optional customization)
+
+    **Check these boxes:**
+    - ✅ Shutdown source when not visible
+    - ✅ Refresh browser when scene becomes active
+
+    Click **OK** to create the source.
+  </Step>
+
+  <Step title="Position and Resize">
+    - Drag the overlay to your desired position
+    - Use the red handles to resize
+    - Right-click > Transform > Edit Transform for precise positioning
+  </Step>
+</Steps>
+
+<Tip>
+  **Pro tip**: Create a separate scene collection for testing overlays. This lets you preview changes without affecting your live streaming setup.
+</Tip>
+
+## Route-Specific Setup Guides
+
+<Tabs>
+  <Tab title="Progress Bar (/project-info/progress)">
+    **Best for**: Bottom-third overlay showing current progress
+
+    **URL**: `http://localhost:3000/project-info/progress`
+
+    **Recommended Settings:**
+    - Width: `1920px`
+    - Height: `1080px`
+    - Position: Bottom center
+    - FPS: `30`
+
+    **Positioning Tips:**
+    1. Add the browser source
+    2. Resize to fit the bottom portion of your stream
+    3. Use Alt+Drag to crop the top portion (keep only the progress bar visible)
+
+    **Component Details** (from `app/project-info/progress/page.tsx:24`):
+    - Displays total progress as a bar
+    - Shows "X / Y Tasks completed"
+    - Updates every 10 seconds
+    - Centered layout
+  </Tab>
+
+  <Tab title="Name Marquee (/name)">
+    **Best for**: Top or bottom name display with interactive animation
+
+    **URL**: `http://localhost:3000/name`
+
+    **Recommended Settings:**
+    - Width: `1920px`
+    - Height: `300px` (adjust based on curve amount)
+    - Position: Top or bottom center
+    - FPS: `60` (for smooth animation)
+
+    **Customization** (edit `app/name/page.tsx:6`):
+    ```tsx
+    <CurvedLoop
+        marqueeText=" ♥ YourName"  // Change this
+        speed={2.2}                 // Animation speed
+        curveAmount={200}           // Curve intensity
+        interactive                 // Enable drag (won't work in OBS)
+        className="fill-pink-500!" // Text color
+    />
+    ```
+
+    **Note**: The `interactive` prop doesn't work in OBS browser sources since there's no mouse interaction.
+  </Tab>
+
+  <Tab title="Project Info (/project-info)">
+    **Best for**: Side panel showing all tasks
+
+    **URL**: `http://localhost:3000/project-info`
+
+    **Recommended Settings:**
+    - Width: `600px`
+    - Height: `1080px`
+    - Position: Left or right side
+    - FPS: `30`
+
+    **Component Details** (from `app/project-info/page.tsx:7`):
+    - Shows project title in scrolling marquee
+    - Lists all tasks as checkboxes
+    - Completed tasks are struck through
+    - Updates every 10 seconds
+
+    **Layout**: 
+    - Top: Scrolling marquee with project info
+    - Bottom: Task list with checkboxes
+  </Tab>
+
+  <Tab title="ASCII Background (/background)">
+    **Best for**: Full-screen animated background
+
+    **URL**: `http://localhost:3000/background`
+
+    **Recommended Settings:**
+    - Width: `1920px`
+    - Height: `1080px`
+    - Position: Full screen (bottom layer)
+    - FPS: `60` (GPU-intensive)
+
+    **Customization** (edit `app/background/page.tsx:5`):
+    ```tsx
+    <ASCIIText 
+        text="Chat!"                              // Change text
+        textColor="oklch(65.6% 0.241 354.308)"  // Change color
+    />
+    ```
+
+    <Warning>
+      **Performance warning**: This overlay uses Three.js and WebGL for 3D rendering. It may cause performance issues on lower-end systems or when streaming at high bitrates. Test thoroughly before using live.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Transparent Background Setup
+
+All overlay routes are designed with transparent backgrounds. Ensure transparency is working:
+
+<Steps>
+  <Step title="Check Browser Source Settings">
+    In the browser source properties, verify:
+    - **Custom CSS** is empty (or doesn't set a background color)
+    - The source is above your main content in the sources list
+  </Step>
+
+  <Step title="Test Transparency">
+    1. Add a colored background behind the overlay
+    2. The background should be visible through empty areas
+    3. Only the overlay content should be opaque
+  </Step>
+
+  <Step title="Fix Transparency Issues">
+    If you see a white/black background:
+    - Check that your CSS doesn't set `background-color`
+    - Ensure Next.js isn't adding a default background
+    - Verify the route's component uses `bg-transparent` or no background class
+  </Step>
+</Steps>
+
+## Multi-Overlay Setup
+
+Combine multiple overlay routes for a complete streaming setup:
+
+<Steps>
+  <Step title="Create Multiple Browser Sources">
+    Add separate browser sources for each overlay:
+    1. **Background**: `/background` (bottom layer)
+    2. **Name Marquee**: `/name` (top)
+    3. **Progress Bar**: `/project-info/progress` (bottom-third)
+  </Step>
+
+  <Step title="Layer Order (bottom to top)">
+    ```
+    ┌─────────────────────────┐
+    │ 5. Webcam               │  ← Your camera
+    │ 4. Progress Bar         │  ← /project-info/progress
+    │ 3. Name Marquee         │  ← /name
+    │ 2. Game/Screen Capture  │  ← Your main content
+    │ 1. ASCII Background     │  ← /background
+    └─────────────────────────┘
+    ```
+
+    Arrange sources in OBS by dragging them in the Sources panel.
+  </Step>
+
+  <Step title="Position Each Overlay">
+    - **Background**: Full screen (1920x1080)
+    - **Name Marquee**: Top center, 1920x300
+    - **Progress Bar**: Bottom center, 1920x200 (cropped)
+  </Step>
+</Steps>
+
+## Performance Optimization
+
+<AccordionGroup>
+  <Accordion title="Reduce CPU/GPU usage">
+    **For all overlays:**
+    1. Set FPS to `30` instead of `60` (unless animations look choppy)
+    2. Enable "Shutdown source when not visible"
+    3. Enable "Refresh browser when scene becomes active"
+
+    **For ASCII background:**
+    1. Reduce `asciiFontSize` (default: 8)
+    2. Set `enableWaves={false}` to disable wave animation
+    3. Consider using a static background image instead
+
+    **For project info:**
+    1. Increase polling interval to 60000ms (1 minute)
+    2. Limit the number of issues displayed
+  </Accordion>
+
+  <Accordion title="Reduce bandwidth usage">
+    Browser sources make HTTP requests to your local server:
+
+    1. **Increase polling intervals** in your components:
+       ```tsx
+       const issues = useFetchIssuesInInterval(60000); // 1 minute
+       ```
+
+    2. **Disable auto-refresh** in browser source properties (if not needed)
+
+    3. **Use static overlays** when possible (export as video/image)
+  </Accordion>
+
+  <Accordion title="Optimize for streaming bitrate">
+    1. **Reduce animation complexity**: Fewer moving parts = lower bitrate
+    2. **Use solid colors**: Gradients and transparency increase encoding complexity
+    3. **Limit overlay size**: Smaller overlays = less data to encode
+    4. **Test encoding**: Monitor OBS's encoding stats while using overlays
+  </Accordion>
+</AccordionGroup>
+
+## Recommended Browser Source Settings
+
+For optimal performance and quality:
+
+### Standard Overlay (Progress Bar, Project Info)
+```
+Width: 1920
+Height: 1080
+FPS: 30
+Control audio via OBS: OFF
+Shutdown source when not visible: ON
+Refresh browser when scene becomes active: ON
+```
+
+### High-Performance Overlay (Name Marquee, ASCII)
+```
+Width: 1920
+Height: 1080
+FPS: 60
+Control audio via OBS: OFF
+Shutdown source when not visible: ON
+Refresh browser when scene becomes active: ON
+Use custom frame rate: ON
+Hardware acceleration: ON
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Overlay not loading in OBS">
+    **Check the following:**
+
+    1. **Is the dev server running?**
+       ```bash
+       npm run dev
+       ```
+       Should show: `Ready on http://localhost:3000`
+
+    2. **Can you access the URL in a browser?**
+       Open `http://localhost:3000/project-info/progress` in Chrome/Firefox
+
+    3. **Firewall blocking localhost?**
+       - Check Windows Firewall settings
+       - Ensure Node.js is allowed
+
+    4. **Wrong URL?**
+       - Must include `http://` prefix
+       - Must be `localhost`, not `127.0.0.1`
+       - Check for typos in the route
+
+    5. **OBS cache issue?**
+       - Right-click the source > Refresh cache
+       - Restart OBS
+  </Accordion>
+
+  <Accordion title="Overlay appears but doesn't update">
+    **Possible causes:**
+
+    1. **GitHub token not set**: Check `.env.local` file
+    2. **Rate limit hit**: Increase polling interval
+    3. **No issues in repo**: Create some GitHub issues
+    4. **Browser source not refreshing**:
+       - Enable "Refresh browser when scene becomes active"
+       - Manually refresh: Right-click > Refresh
+
+    **Debug steps:**
+    1. Open the URL in a regular browser
+    2. Open browser DevTools (F12)
+    3. Check Console tab for errors
+    4. Check Network tab for failed API requests
+  </Accordion>
+
+  <Accordion title="Performance issues / lag">
+    **Symptoms:**
+    - OBS preview is choppy
+    - Stream bitrate spikes
+    - High CPU/GPU usage
+
+    **Solutions:**
+
+    1. **Reduce FPS**: Change from 60 to 30 FPS
+    2. **Disable ASCII background**: It's GPU-intensive
+    3. **Increase polling interval**: 60000ms or higher
+    4. **Simplify overlays**: Use fewer browser sources
+    5. **Use OBS Studio (not Streamlabs OBS)**: Better performance
+    6. **Update graphics drivers**: Especially for AMD/NVIDIA cards
+    7. **Enable hardware acceleration**: In browser source settings
+  </Accordion>
+
+  <Accordion title="Overlay cut off or wrong size">
+    **Fix positioning:**
+
+    1. Right-click the source
+    2. Transform > **Fit to screen** (for full-screen overlays)
+    3. Or manually set size:
+       - Transform > Edit Transform
+       - Set Position X/Y and Size Width/Height
+
+    **Common sizes:**
+    - Full screen: 1920x1080
+    - Bottom third: 1920x360
+    - Side panel: 600x1080
+  </Accordion>
+
+  <Accordion title="Text is blurry">
+    **Improve text quality:**
+
+    1. **Set browser source resolution to match canvas**:
+       - Canvas: 1920x1080
+       - Browser source: 1920x1080
+
+    2. **Use exact pixels**: Don't scale the source after adding it
+
+    3. **Increase font size**: Larger fonts look sharper
+
+    4. **Use web-safe fonts**: System fonts render better than custom fonts
+
+    5. **Enable font smoothing**: Add to Custom CSS:
+       ```css
+       * {
+           -webkit-font-smoothing: antialiased;
+           -moz-osx-font-smoothing: grayscale;
+       }
+       ```
+  </Accordion>
+
+  <Accordion title="Background not transparent">
+    **Transparency checklist:**
+
+    1. ✅ Browser source doesn't have custom CSS setting background
+    2. ✅ Component uses `bg-transparent` or no background class
+    3. ✅ No `<body>` background color in global CSS
+    4. ✅ Source is above other elements in OBS
+
+    **Test transparency:**
+    - Add a bright colored source behind the overlay
+    - If you can't see the color through empty areas, transparency isn't working
+
+    **Force transparency** (add to Custom CSS in browser source):
+    ```css
+    body {
+        background: transparent !important;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Production Deployment
+
+For live streaming, you should build and deploy the overlay:
+
+<Tabs>
+  <Tab title="Local Production Build">
+    ```bash
+    # Build the production version
+    npm run build
+
+    # Start the production server
+    npm run start
+    ```
+
+    Then use `http://localhost:3000/[route]` in OBS (same as development).
+
+    **Benefits:**
+    - Faster performance
+    - Smaller bundle size
+    - More stable (no hot-reload)
+  </Tab>
+
+  <Tab title="Remote Deployment">
+    Deploy to a hosting platform for remote access:
+
+    1. **Deploy to Vercel** (recommended):
+       ```bash
+       npm install -g vercel
+       vercel
+       ```
+
+    2. **Add environment variables** in Vercel dashboard:
+       - `GITHUB_TOKEN`: Your GitHub token
+
+    3. **Use the deployed URL in OBS**:
+       ```
+       https://your-app.vercel.app/project-info/progress
+       ```
+
+    **Benefits:**
+    - Access from any computer
+    - Share overlays with co-streamers
+    - No local server required
+  </Tab>
+</Tabs>
+
+<Warning>
+  **Security warning**: If you deploy publicly, your overlay will be accessible to anyone. Consider adding authentication if you want to keep it private.
+</Warning>
+
+## Advanced OBS Techniques
+
+### Scene Transitions with Overlays
+
+Create smooth transitions:
+
+1. Duplicate your scene
+2. Remove/add different overlay routes
+3. Use a Stinger or Fade transition between scenes
+
+### Conditional Visibility
+
+Show overlays only when needed:
+
+1. Right-click the browser source
+2. **Filters** > **+** > **Scroll**
+3. Configure scroll animation
+4. Bind to a hotkey for show/hide
+
+### Chroma Key Effects
+
+Although overlays are transparent, you can add color effects:
+
+1. Right-click the source
+2. **Filters** > **+** > **Color Correction**
+3. Adjust hue, saturation, contrast
+4. Save as a preset for consistent branding
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Customize Your Overlay" icon="palette" href="/guides/customization">
+    Learn how to customize colors, fonts, and animations
+  </Card>
+  <Card title="GitHub Integration" icon="book" href="/guides/github-integration">
+    Configure GitHub API settings and polling intervals
+  </Card>
+</CardGroup>

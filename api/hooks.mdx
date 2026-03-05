@@ -1,0 +1,166 @@
+---
+title: 'React Hooks'
+description: 'Custom React hooks for data fetching and state management'
+---
+
+## useFetchIssuesInInterval
+
+A custom React hook that periodically fetches GitHub issues at a specified interval. This hook is ideal for creating live-updating overlays or dashboards that need to reflect the latest issue status.
+
+### Hook Signature
+
+```typescript
+function useFetchIssuesInInterval(intervalInMs: number): Issue[] | undefined
+```
+
+### Parameters
+
+<ParamField path="intervalInMs" type="number" required>
+  The interval in milliseconds at which to fetch issues from GitHub. For example, `10000` will fetch issues every 10 seconds.
+</ParamField>
+
+### Return Value
+
+<ResponseField name="issues" type="Issue[] | undefined">
+  An array of [Issue](/api/types#issue) objects, or `undefined` if no data has been fetched yet.
+  
+  Each issue contains:
+  - `id`: number - Unique identifier
+  - `title`: string - Issue title
+  - `isCompleted`: boolean - Whether the issue is closed
+</ResponseField>
+
+### Behavior
+
+1. **Initial State**: Returns `undefined` until the first fetch completes
+2. **Periodic Fetching**: Uses `setInterval` to fetch issues at the specified interval
+3. **Automatic Cleanup**: Clears the interval when the component unmounts
+4. **Client-Side Only**: This is a client component hook (uses `"use client"`)
+
+### Usage Example
+
+#### Basic Usage
+
+```typescript
+"use client";
+import { useFetchIssuesInInterval } from "@/app/lib/hooks/useFetchIssuesInInterval";
+
+export default function ProgressPage() {
+  // Fetch issues every 10 seconds
+  const issues = useFetchIssuesInInterval(10000);
+
+  if (!issues) {
+    return <div>Loading issues...</div>;
+  }
+
+  return (
+    <div>
+      <h1>Project Progress</h1>
+      <ul>
+        {issues.map(issue => (
+          <li key={issue.id}>
+            {issue.title} - {issue.isCompleted ? '✓' : '○'}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+#### Real-World Example from Progress Overlay
+
+```typescript
+"use client";
+import { useFetchIssuesInInterval } from "@/app/lib/hooks/useFetchIssuesInInterval";
+import { ProjectProgress } from "@/components/project-progress";
+
+export default function ProgressPage() {
+  const issues = useFetchIssuesInInterval(10000);
+
+  if (!issues) {
+    return "No Issues";
+  }
+
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <ProjectProgress text="Project Progress" issues={issues} />
+    </div>
+  );
+}
+```
+
+#### Filtering and Sorting Issues
+
+```typescript
+"use client";
+import { useFetchIssuesInInterval } from "@/app/lib/hooks/useFetchIssuesInInterval";
+
+export default function ProjectInfoPage() {
+  const issues = useFetchIssuesInInterval(10000);
+
+  // Sort issues by ID
+  const orderedIssues = issues?.sort((a, b) => a.id - b.id);
+
+  // Separate completed and open issues
+  const closedIssues = orderedIssues?.filter((issue) => issue.isCompleted);
+  const openIssues = orderedIssues?.filter((issue) => !issue.isCompleted);
+
+  return (
+    <div>
+      <h2>Completed Issues</h2>
+      {closedIssues?.map(issue => (
+        <div key={issue.id}>{issue.title}</div>
+      ))}
+      
+      <h2>Open Issues</h2>
+      {openIssues?.map(issue => (
+        <div key={issue.id}>{issue.title}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Implementation Details
+
+The hook internally:
+1. Uses `useState` to store the fetched issues
+2. Uses `useEffect` to set up the interval when the component mounts
+3. Calls the [`fetchIssues`](/api/actions#fetchissues) server action to get data
+4. Cleans up the interval on unmount to prevent memory leaks
+
+### Source Code
+
+```typescript
+"use client";
+import { Issue } from "@/lib/types";
+import { useState, useEffect } from "react";
+import { fetchIssues } from "../actions";
+
+export function useFetchIssuesInInterval(intervalInMs: number) {
+    const [issues, setIssues] = useState<Issue[]>();
+    
+    const fetchData = async () => {
+        const newIssues = await fetchIssues();
+        setIssues(newIssues);
+    };
+    
+    useEffect(() => {
+        const intervalId = setInterval(fetchData, intervalInMs ?? 5000);
+        return () => clearInterval(intervalId);
+    }, []);
+
+    return issues;
+}
+```
+
+### Best Practices
+
+<Warning>
+  Be mindful of GitHub API rate limits when setting short intervals. GitHub allows 5,000 requests per hour for authenticated requests. A 10-second interval means 360 requests per hour.
+</Warning>
+
+<Tip>
+  For Twitch overlays, an interval of 10-30 seconds (10000-30000ms) provides a good balance between freshness and API usage.
+</Tip>

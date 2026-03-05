@@ -1,0 +1,138 @@
+---
+title: Noise
+description: Canvas-based animated grain effect
+---
+
+## Overview
+
+The `Noise` component creates a canvas-based animated grain overlay effect. It generates random noise patterns that update at a configurable interval, adding visual texture to your overlay.
+
+## Props
+
+<ParamField path="patternSize" type="number" default={250}>
+  Size of the noise pattern. Note: This prop is defined but not currently used in the implementation. The canvas uses a fixed 1024x1024 size.
+</ParamField>
+
+<ParamField path="patternScaleX" type="number" default={1}>
+  Horizontal scale of the pattern. Note: This prop is defined but not currently used in the implementation.
+</ParamField>
+
+<ParamField path="patternScaleY" type="number" default={1}>
+  Vertical scale of the pattern. Note: This prop is defined but not currently used in the implementation.
+</ParamField>
+
+<ParamField path="patternRefreshInterval" type="number" default={2}>
+  Number of frames between pattern updates. Lower values create more frequent updates and more "movement" in the grain.
+</ParamField>
+
+<ParamField path="patternAlpha" type="number" default={15}>
+  Alpha transparency value for the grain (0-255). Lower values create more subtle grain effects.
+</ParamField>
+
+## Usage Example
+
+```tsx
+import Noise from "@/components/Noise";
+
+export default function MyPage() {
+  return (
+    <div>
+      <Noise />
+      {/* Other content */}
+    </div>
+  );
+}
+```
+
+## Customization Examples
+
+<Tabs>
+  <Tab title="Default">
+    ```tsx
+    <Noise />
+    ```
+  </Tab>
+  
+  <Tab title="Subtle Grain">
+    ```tsx
+    <Noise 
+      patternAlpha={8}
+      patternRefreshInterval={3}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Heavy Grain">
+    ```tsx
+    <Noise 
+      patternAlpha={30}
+      patternRefreshInterval={1}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Slow Animation">
+    ```tsx
+    <Noise 
+      patternRefreshInterval={10}
+    />
+    ```
+  </Tab>
+</Tabs>
+
+## Technical Details
+
+### Canvas-Based Rendering
+
+The component uses HTML5 Canvas to generate grain:
+1. Creates a 1024x1024 canvas
+2. Scales to fill the viewport (100vw x 100vh)
+3. Generates random pixel values on each refresh
+
+### Grain Generation
+
+Each pixel is assigned a random grayscale value with the specified alpha:
+```typescript
+for (let i = 0; i < data.length; i += 4) {
+  const value = Math.random() * 255;
+  data[i] = value;     // Red
+  data[i + 1] = value; // Green
+  data[i + 2] = value; // Blue
+  data[i + 3] = patternAlpha; // Alpha
+}
+```
+
+### Animation Loop
+
+The component uses `requestAnimationFrame` with frame counting:
+```typescript
+if (frame % patternRefreshInterval === 0) {
+  drawGrain();
+}
+frame++;
+```
+
+This allows control over update frequency without affecting frame rate.
+
+## Styling
+
+The canvas has these styles applied:
+- **Position**: Absolute, top-left corner
+- **Size**: Full viewport (100vw x 100vh)
+- **Pointer events**: None (doesn't block interactions)
+- **Image rendering**: Pixelated (preserves sharp grain)
+
+## Performance Notes
+
+- Fixed 1024x1024 canvas size balances quality and performance
+- Frame-skipping via `patternRefreshInterval` reduces computational load
+- `requestAnimationFrame` ensures smooth updates synced with display refresh
+- Proper cleanup prevents memory leaks on unmount
+- Responsive to window resize events
+
+## Use Cases
+
+- Adding film grain aesthetic to overlays
+- Creating texture on solid backgrounds
+- Enhancing retro or lo-fi visual styles
+- Subtle motion to prevent static appearance

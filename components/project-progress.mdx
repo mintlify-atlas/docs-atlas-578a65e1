@@ -1,0 +1,193 @@
+---
+title: ProjectProgress
+description: GitHub issue completion tracker with progress visualization
+---
+
+## Overview
+
+The `ProjectProgress` component displays GitHub issue completion progress with a visual progress bar. It shows the number of completed tasks versus total tasks and renders a customizable progress indicator.
+
+## Interface
+
+### ProjectProgress Props
+
+<ParamField path="text" type="string" required>
+  Header text displayed above the progress bar (e.g., "Project Progress").
+</ParamField>
+
+<ParamField path="issues" type="Issue[]" required>
+  Array of issue objects to track. Each issue must conform to the `Issue` interface.
+</ParamField>
+
+### Issue Interface
+
+<ParamField path="title" type="string" required>
+  The title of the issue.
+</ParamField>
+
+<ParamField path="isCompleted" type="boolean" required>
+  Whether the issue is completed (closed).
+</ParamField>
+
+## Usage Example
+
+From `~/workspace/source/app/project-info/progress/page.tsx:26`:
+
+```tsx
+import { ProjectProgress } from "@/components/project-progress";
+
+export default function ProgressPage() {
+  const issues = [
+    { title: "Setup project", isCompleted: true },
+    { title: "Add components", isCompleted: true },
+    { title: "Write tests", isCompleted: false },
+    { title: "Deploy", isCompleted: false },
+  ];
+
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <ProjectProgress text="Project Progress" issues={issues} />
+    </div>
+  );
+}
+```
+
+## Real-World Usage with GitHub API
+
+The component is designed to work with GitHub Issues. Here's how it's used in the actual app:
+
+```tsx
+"use client";
+import { fetchIssues } from "@/app/lib/actions";
+import { useFetchIssuesInInterval } from "@/app/lib/hooks/useFetchIssuesInInterval";
+import { Issue, ProjectProgress } from "@/components/project-progress";
+import { GithubIssue } from "@/lib/types";
+
+const githubIssuesToIssues = (githubIssue: GithubIssue) => {
+  const issue: Issue = {
+    title: githubIssue.title,
+    isCompleted: githubIssue.state === "closed",
+  };
+  return issue;
+};
+
+export default function ProgressPage() {
+  // Fetch issues every 10 seconds
+  const issues = useFetchIssuesInInterval(10000);
+
+  if (!issues) {
+    return "No Issues";
+  }
+
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <ProjectProgress text="Project Progress" issues={issues} />
+    </div>
+  );
+}
+```
+
+## Examples
+
+<Tabs>
+  <Tab title="Basic">
+    ```tsx
+    <ProjectProgress 
+      text="Sprint Progress"
+      issues={[
+        { title: "Task 1", isCompleted: true },
+        { title: "Task 2", isCompleted: false },
+      ]}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="All Completed">
+    ```tsx
+    <ProjectProgress 
+      text="Milestone 1"
+      issues={[
+        { title: "Setup", isCompleted: true },
+        { title: "Development", isCompleted: true },
+        { title: "Testing", isCompleted: true },
+      ]}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Not Started">
+    ```tsx
+    <ProjectProgress 
+      text="Upcoming Sprint"
+      issues={[
+        { title: "Feature A", isCompleted: false },
+        { title: "Feature B", isCompleted: false },
+        { title: "Bug Fix", isCompleted: false },
+      ]}
+    />
+    ```
+  </Tab>
+</Tabs>
+
+## Visual Display
+
+The component renders:
+
+1. **Header Text**: Large text (text-5xl) displaying the `text` prop
+2. **Progress Bar**: A custom `Progress` component showing completion percentage
+3. **Completion Text**: Shows "X / Y Tasks completed" below the bar
+
+## Technical Details
+
+### Calculation
+
+The component calculates completion percentage:
+```typescript
+const completedIssues = issues.filter((issue) => issue.isCompleted);
+const completedText = `${completedIssues.length} / ${issues.length} Tasks completed`;
+```
+
+### Styling
+
+Default colors (from `~/workspace/source/components/project-progress.tsx:4`):
+- **Indicator (filled)**: `oklch(65.6% 0.241 354.308)` (cyan)
+- **Background**: `#510424` (dark red)
+- **Header**: `text-overlay-primary` class
+- **Completion text**: `text-overlay-white` class, text-4xl size
+
+### Layout
+
+The component uses Flexbox:
+```tsx
+<div className="flex w-full flex-col">
+  {/* Header */}
+  <p className="text-overlay-primary mb-6 text-5xl">Project Progress</p>
+  {/* Progress bar with h-12 (3rem height) */}
+  <Progress className="h-12" />
+  {/* Completion text */}
+  <p className="text-overlay-white mt-2 text-4xl">{completedText}</p>
+</div>
+```
+
+## Use Cases
+
+- **Stream Overlays**: Display project progress during coding streams
+- **GitHub Milestones**: Track milestone completion in real-time
+- **Sprint Progress**: Visualize sprint task completion
+- **Goal Tracking**: Monitor any set of boolean completion states
+
+## Integration with GitHub
+
+This component is designed to work seamlessly with the GitHub API:
+
+1. Fetch issues using GitHub's REST or GraphQL API
+2. Map `state: "closed"` to `isCompleted: true`
+3. Pass the mapped issues array to the component
+4. Optionally use polling (like `useFetchIssuesInInterval`) for live updates
+
+## Dependencies
+
+The component depends on:
+- `Progress` component from `./ui/progress`
+- Tailwind CSS for styling
+- Color constants defined in the file

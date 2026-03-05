@@ -1,0 +1,157 @@
+---
+title: Progress
+description: Radix UI progress bar with customizable colors
+---
+
+## Overview
+
+The `Progress` component is a customizable progress bar built on top of the [Radix UI Progress primitive](https://www.radix-ui.com/primitives/docs/components/progress). It provides a simple, accessible way to display progress with custom colors.
+
+## Props
+
+The component extends all props from `Radix UI Progress.Root` and adds custom color properties.
+
+<ParamField path="value" type="number" required>
+  Progress value from 0 to 100.
+</ParamField>
+
+<ParamField path="indicatorColor" type="string">
+  Background color for the progress indicator (the filled portion). Accepts any valid CSS color value.
+</ParamField>
+
+<ParamField path="backgroundColor" type="string">
+  Background color for the progress track (the unfilled portion). Accepts any valid CSS color value.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS class names to apply to the progress root element.
+</ParamField>
+
+<ParamField path="style" type="React.CSSProperties">
+  Additional inline styles to apply to the progress root element.
+</ParamField>
+
+## Usage Example
+
+```tsx
+import { Progress } from "@/components/ui/progress";
+
+export default function MyComponent() {
+  return (
+    <Progress 
+      value={75} 
+      indicatorColor="#00ff00"
+      backgroundColor="#333333"
+    />
+  );
+}
+```
+
+## Customization Examples
+
+<Tabs>
+  <Tab title="Basic">
+    ```tsx
+    <Progress value={50} />
+    ```
+  </Tab>
+  
+  <Tab title="Custom Colors">
+    ```tsx
+    <Progress 
+      value={80}
+      indicatorColor="oklch(65.6% 0.241 354.308)"
+      backgroundColor="#510424"
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Custom Size">
+    ```tsx
+    <Progress 
+      value={60}
+      className="h-8"
+      indicatorColor="#ff6188"
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Full Width">
+    ```tsx
+    <div className="w-full">
+      <Progress 
+        value={45}
+        className="h-4"
+      />
+    </div>
+    ```
+  </Tab>
+</Tabs>
+
+## Real Usage Example
+
+From the `ProjectProgress` component in `~/workspace/source/components/project-progress.tsx:25`:
+
+```tsx
+<Progress
+  value={(completedIssues.length / issues.length) * 100}
+  className="h-12"
+  indicatorColor={CYAN}
+  backgroundColor={GREY_AZURE}
+/>
+```
+
+## Technical Details
+
+### Radix UI Foundation
+
+This component wraps:
+- `ProgressPrimitive.Root` - The container element
+- `ProgressPrimitive.Indicator` - The filled portion that animates
+
+### Animation
+
+The indicator uses CSS transforms for smooth progress updates:
+```typescript
+style={{
+  transform: `translateX(-${100 - (value || 0)}%)`,
+  backgroundColor: indicatorColor,
+}}
+```
+
+### Default Styles
+
+- **Height**: 2 (0.5rem / 8px)
+- **Border radius**: Full (rounded-full)
+- **Width**: Full width of container
+- **Background**: Primary color at 20% opacity (when not customized)
+- **Indicator**: Primary color (when not customized)
+- **Transition**: All properties transition smoothly
+
+## Accessibility
+
+Radix UI Progress provides:
+- Proper ARIA attributes (`role="progressbar"`, `aria-valuemin`, `aria-valuemax`, `aria-valuenow`)
+- Semantic HTML structure
+- Screen reader support
+
+## Styling with Tailwind
+
+The component uses Tailwind CSS classes and the `cn()` utility for conditional styling. You can override default styles:
+
+```tsx
+<Progress 
+  value={70}
+  className="h-6 rounded-sm bg-slate-700"
+  indicatorColor="#fbbf24"
+/>
+```
+
+## Use Cases
+
+- Task completion tracking
+- File upload progress
+- Loading states
+- Skill level indicators
+- Achievement progress
+- Project milestone tracking

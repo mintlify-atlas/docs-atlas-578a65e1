@@ -1,0 +1,147 @@
+---
+title: ASCIIText
+description: 3D text rendered with ASCII art effects using Three.js
+---
+
+## Overview
+
+The `ASCIIText` component renders text as a 3D plane with ASCII art conversion using Three.js and custom shaders. It features wave animations, mouse interaction, chromatic aberration effects, and hue rotation based on mouse position.
+
+## Visual Effect
+
+The component creates a stunning visual effect by:
+1. Rendering text to a canvas using IBM Plex Mono font
+2. Mapping the text onto a 3D plane with Three.js
+3. Applying vertex shaders for wave deformation
+4. Converting the rendered output to ASCII characters
+5. Applying chromatic aberration in the fragment shader
+6. Rotating hue based on mouse movement for colorful effects
+
+The text rotates in 3D space following mouse movements and displays as ASCII art with a gradient overlay.
+
+## Props
+
+<ParamField path="text" type="string" default="David!">
+  The text content to render as ASCII art.
+</ParamField>
+
+<ParamField path="asciiFontSize" type="number" default={8}>
+  Font size for the ASCII characters in the output. Smaller values create denser ASCII art.
+</ParamField>
+
+<ParamField path="textFontSize" type="number" default={200}>
+  Font size for the source text rendered on the canvas before ASCII conversion.
+</ParamField>
+
+<ParamField path="textColor" type="string" default="#fdf9f3">
+  Color of the source text. Accepts any valid CSS color value.
+</ParamField>
+
+<ParamField path="planeBaseHeight" type="number" default={8}>
+  Base height of the 3D plane geometry. Width is calculated automatically based on text aspect ratio.
+</ParamField>
+
+<ParamField path="enableWaves" type="boolean" default={true}>
+  Enable or disable the wave animation effect on the 3D plane.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS class names to apply to the container element.
+</ParamField>
+
+## Usage Example
+
+From `~/workspace/source/app/background/page.tsx:5`:
+
+```tsx
+import ASCIIText from "@/components/ASCIIText";
+
+export default function BackgroundPage() {
+  return <ASCIIText text="Chat!" textColor="oklch(65.6% 0.241 354.308)" />;
+}
+```
+
+## Advanced Examples
+
+<Tabs>
+  <Tab title="Basic">
+    ```tsx
+    <ASCIIText text="Hello World" />
+    ```
+  </Tab>
+  
+  <Tab title="Custom Colors">
+    ```tsx
+    <ASCIIText 
+      text="Streaming Now" 
+      textColor="#ff6188"
+      asciiFontSize={10}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Static (No Waves)">
+    ```tsx
+    <ASCIIText 
+      text="Welcome" 
+      enableWaves={false}
+      planeBaseHeight={10}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Large Text">
+    ```tsx
+    <ASCIIText 
+      text="BIG"
+      textFontSize={300}
+      asciiFontSize={12}
+      planeBaseHeight={12}
+    />
+    ```
+  </Tab>
+</Tabs>
+
+## Technical Details
+
+### Three.js Rendering
+
+The component uses:
+- **PlaneGeometry** (36x36 segments) for the 3D mesh
+- **ShaderMaterial** with custom vertex and fragment shaders
+- **CanvasTexture** to map text onto the plane
+- **PerspectiveCamera** with FOV 45
+
+### Shader Effects
+
+The vertex shader applies sine/cosine wave transformations:
+```glsl
+transformed.x += sin(time + position.y) * 0.5 * waveFactor;
+transformed.y += cos(time + position.z) * 0.15 * waveFactor;
+transformed.z += sin(time + position.x) * waveFactor;
+```
+
+The fragment shader creates chromatic aberration by sampling RGB channels at different offsets.
+
+### Mouse Interaction
+
+The component responds to mouse movement in two ways:
+1. **3D Rotation** - The plane rotates to follow the mouse cursor
+2. **Hue Rotation** - The color hue shifts based on the angle from center to mouse position
+
+### ASCII Conversion
+
+The `AsciiFilter` class converts the rendered scene to ASCII using character density mapping:
+```typescript
+const charset = " .'`^\",:;Il!i~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+```
+
+Characters are selected based on grayscale brightness values.
+
+## Performance Notes
+
+- The component uses `requestAnimationFrame` for smooth 60fps animation
+- Font loading is awaited to ensure proper rendering
+- ResizeObserver handles responsive sizing
+- IntersectionObserver defers initialization until the component is visible
+- Proper cleanup prevents memory leaks on unmount

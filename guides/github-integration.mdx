@@ -1,0 +1,256 @@
+---
+title: GitHub Integration
+description: Set up GitHub API integration to display your repository issues as progress tasks
+---
+
+This guide walks you through setting up the GitHub integration to fetch and display your repository issues in the overlay.
+
+## Overview
+
+The Progress Overlay uses the GitHub API to fetch issues from your repository and display them as tasks. Issues are polled at regular intervals to keep the overlay up-to-date with your project's progress.
+
+## Prerequisites
+
+- A GitHub account
+- A GitHub repository with issues
+- Node.js and npm installed
+
+## Setup Steps
+
+<Steps>
+  <Step title="Create a GitHub Personal Access Token">
+    1. Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
+    2. Click **Generate new token** > **Generate new token (classic)**
+    3. Give your token a descriptive name (e.g., "Progress Overlay")
+    4. Set an expiration date (recommended: 90 days or less)
+    5. Select the following scopes:
+       - `repo` - Full control of private repositories (or `public_repo` for public repos only)
+    6. Click **Generate token**
+    7. **Important**: Copy the token immediately - you won't be able to see it again!
+  </Step>
+
+  <Step title="Configure Environment Variable">
+    Create a `.env.local` file in the root of your project:
+
+    ```bash
+    GITHUB_TOKEN=your_personal_access_token_here
+    ```
+
+    <Warning>
+      **Never commit your `.env.local` file to version control!** 
+      
+      The token provides access to your GitHub repositories. Always keep it secure and never share it publicly. Add `.env.local` to your `.gitignore` file.
+    </Warning>
+  </Step>
+
+  <Step title="Configure Repository Settings">
+    Open `app/lib/actions.ts` and update the `owner` and `repo` fields to match your GitHub repository:
+
+    ```typescript app/lib/actions.ts
+    const { data } = await octokit.rest.issues.listForRepo({
+        owner: "your-github-username",  // Change this
+        repo: "your-repo-name",          // Change this
+        state: "all",
+    });
+    ```
+
+    - `owner`: Your GitHub username or organization name
+    - `repo`: The repository name
+    - `state`: Set to `"all"` to fetch both open and closed issues
+  </Step>
+
+  <Step title="Start the Development Server">
+    ```bash
+    npm run dev
+    ```
+
+    The overlay will now fetch issues from your GitHub repository!
+  </Step>
+</Steps>
+
+## How It Works
+
+### The fetchIssues Function
+
+The core GitHub integration is handled by the `fetchIssues` server action in `app/lib/actions.ts:4`:
+
+```typescript
+export async function fetchIssues() {
+    const octokit = new Octokit({
+        auth: process.env.GITHUB_TOKEN,
+    });
+
+    const { data } = await octokit.rest.issues.listForRepo({
+        owner: "christian1koch",
+        repo: "progress-overlay",
+        state: "all",
+    });
+
+    const issues = data.map(githubIssuesToIssues);
+    return issues;
+}
+```
+
+This function:
+1. Initializes the Octokit client with your GitHub token
+2. Fetches all issues from the specified repository
+3. Maps the GitHub issue format to a simplified format
+4. Returns the processed issues
+
+### The useFetchIssuesInInterval Hook
+
+Issues are fetched automatically at regular intervals using the `useFetchIssuesInInterval` hook located in `app/lib/hooks/useFetchIssuesInInterval.ts:6`:
+
+```typescript
+export function useFetchIssuesInInterval(intervalInMs: number) {
+    const [issues, setIssues] = useState<Issue[]>();
+    
+    const fetchData = async () => {
+        const newIssues = await fetchIssues();
+        setIssues(newIssues);
+    };
+    
+    useEffect(() => {
+        const intervalId = setInterval(fetchData, intervalInMs ?? 5000);
+        return () => clearInterval(intervalId);
+    }, []);
+
+    return issues;
+}
+```
+
+**Key Features:**
+- Polls the GitHub API at a configurable interval
+- Default interval: 5000ms (5 seconds)
+- Automatically cleans up when component unmounts
+
+## Polling Configuration
+
+You can customize the polling interval in your page components. For example, in `app/project-info/page.tsx:8`:
+
+```typescript
+const issues = useFetchIssuesInInterval(10000); // Poll every 10 seconds
+```
+
+**Recommended intervals:**
+- Development: 10000-30000ms (10-30 seconds)
+- Production/Streaming: 60000-300000ms (1-5 minutes)
+
+<Tip>
+  GitHub has rate limits for API requests. Longer polling intervals help avoid hitting these limits, especially if you're streaming for extended periods.
+</Tip>
+
+## Issue Data Format
+
+GitHub issues are mapped to a simplified format defined in `lib/types.ts:1`:
+
+```typescript
+interface Issue {
+    id: number;
+    title: string;
+    isCompleted: boolean;  // true if issue state is "closed"
+}
+```
+
+The mapping function in `lib/utils.ts:9` converts GitHub issues:
+
+```typescript
+export function githubIssuesToIssues(githubIssue: GithubIssue) {
+    const issue: Issue = {
+        id: githubIssue.id,
+        title: githubIssue.title,
+        isCompleted: githubIssue.state === "closed",
+    };
+    return issue;
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Issues not loading">
+    **Check the following:**
+    1. Verify your `GITHUB_TOKEN` is set correctly in `.env.local`
+    2. Ensure the token has the correct permissions (`repo` or `public_repo`)
+    3. Confirm the `owner` and `repo` values in `actions.ts` match your repository
+    4. Check the browser console for API errors
+    5. Restart the development server after changing `.env.local`
+  </Accordion>
+
+  <Accordion title="Rate limit errors">
+    GitHub limits API requests to:
+    - **5,000 requests/hour** for authenticated requests
+    - **60 requests/hour** for unauthenticated requests
+
+    **Solutions:**
+    - Increase the polling interval (use 60000ms or higher)
+    - Ensure your `GITHUB_TOKEN` is being used (authenticated requests have higher limits)
+    - Monitor your rate limit: `curl -H "Authorization: token YOUR_TOKEN" https://api.github.com/rate_limit`
+  </Accordion>
+
+  <Accordion title="Token authentication failed">
+    1. Generate a new token - old tokens may have expired
+    2. Ensure there are no extra spaces in your `.env.local` file
+    3. Use a classic token, not a fine-grained token (classic tokens are better supported)
+    4. Verify the token has repository access
+  </Accordion>
+
+  <Accordion title="Only seeing 'No Issues' message">
+    This means:
+    - Your repository has no issues, OR
+    - The API call hasn't completed yet
+
+    **To fix:**
+    - Create some issues in your GitHub repository
+    - Wait a few seconds for the first API call to complete
+    - Check the Network tab in browser DevTools for API errors
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Configuration
+
+### Filtering Issues
+
+You can filter issues by labels, state, or other criteria by modifying the `fetchIssues` function:
+
+```typescript
+const { data } = await octokit.rest.issues.listForRepo({
+    owner: "your-username",
+    repo: "your-repo",
+    state: "open",           // Only open issues
+    labels: "feature",       // Only issues with "feature" label
+    sort: "created",         // Sort by creation date
+    direction: "asc"         // Ascending order
+});
+```
+
+### Multiple Repositories
+
+To fetch issues from multiple repositories, create separate fetch functions:
+
+```typescript
+export async function fetchIssuesFromRepo(owner: string, repo: string) {
+    const octokit = new Octokit({
+        auth: process.env.GITHUB_TOKEN,
+    });
+
+    const { data } = await octokit.rest.issues.listForRepo({
+        owner,
+        repo,
+        state: "all",
+    });
+
+    return data.map(githubIssuesToIssues);
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Customize Your Overlay" icon="palette" href="/guides/customization">
+    Learn how to customize colors, fonts, and animations
+  </Card>
+  <Card title="OBS Setup" icon="video" href="/guides/obs-setup">
+    Add your overlay to OBS for streaming
+  </Card>
+</CardGroup>

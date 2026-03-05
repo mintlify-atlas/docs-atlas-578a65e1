@@ -1,0 +1,109 @@
+---
+title: 'Server Actions'
+description: 'Server-side actions for fetching GitHub data'
+---
+
+## fetchIssues
+
+A Next.js server action that fetches all issues from the configured GitHub repository using the Octokit SDK.
+
+### Function Signature
+
+```typescript
+export async function fetchIssues(): Promise<Issue[]>
+```
+
+### Return Type
+
+<ResponseField name="issues" type="Issue[]">
+  An array of [Issue](/api/types#issue) objects with the following properties:
+  
+  - `id`: number - Unique identifier from GitHub
+  - `title`: string - The issue title
+  - `isCompleted`: boolean - Whether the issue is closed
+</ResponseField>
+
+### Configuration
+
+The function is configured to fetch from a specific GitHub repository:
+
+<ParamField path="owner" type="string" default="christian1koch">
+  The GitHub repository owner/organization
+</ParamField>
+
+<ParamField path="repo" type="string" default="progress-overlay">
+  The GitHub repository name
+</ParamField>
+
+<ParamField path="state" type="string" default="all">
+  The state of issues to fetch ("all", "open", or "closed")
+</ParamField>
+
+### Authentication
+
+The function requires a `GITHUB_TOKEN` environment variable to authenticate with the GitHub API. Set this in your `.env.local` file:
+
+```bash
+GITHUB_TOKEN=your_github_personal_access_token
+```
+
+### Implementation Details
+
+1. Creates an Octokit client with GitHub token authentication
+2. Fetches all issues (both open and closed) from the repository
+3. Transforms GitHub issues using the `githubIssuesToIssues` utility function
+4. Returns an array of simplified [Issue](/api/types#issue) objects
+
+### Error Handling
+
+This function may throw errors in the following cases:
+- Missing or invalid `GITHUB_TOKEN` environment variable
+- Network errors when connecting to GitHub API
+- Invalid repository owner or name
+- Rate limiting from GitHub API
+
+### Usage Example
+
+```typescript
+import { fetchIssues } from "@/app/lib/actions";
+
+export default async function MyComponent() {
+  const issues = await fetchIssues();
+  
+  return (
+    <div>
+      <h1>Issues</h1>
+      <ul>
+        {issues.map(issue => (
+          <li key={issue.id}>
+            {issue.title} - {issue.isCompleted ? '✓' : '○'}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+### Source Code
+
+```typescript
+"use server";
+import { githubIssuesToIssues } from "@/lib/utils";
+import { Octokit } from "@octokit/rest";
+
+export async function fetchIssues() {
+    const octokit = new Octokit({
+        auth: process.env.GITHUB_TOKEN,
+    });
+
+    const { data } = await octokit.rest.issues.listForRepo({
+        owner: "christian1koch",
+        repo: "progress-overlay",
+        state: "all",
+    });
+
+    const issues = data.map(githubIssuesToIssues);
+    return issues;
+}
+```

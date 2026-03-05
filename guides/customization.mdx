@@ -1,0 +1,483 @@
+---
+title: Customization Guide
+description: Customize colors, fonts, animations, and layouts to match your stream branding
+---
+
+Make the Progress Overlay your own by customizing colors, typography, animations, and component behavior.
+
+## Color Customization
+
+### Overlay Color Variables
+
+The overlay uses CSS custom properties defined in `app/globals.css:104` for consistent theming:
+
+```css
+:root {
+    --color-overlay-primary: oklch(65.6% 0.241 354.308);  /* Pink/red accent */
+    --color-overlay-secondary: #9bf633;                    /* Lime green */
+    --color-overlay-white: #f7f7f7;                        /* Off-white */
+}
+```
+
+<Tabs>
+  <Tab title="Quick Color Change">
+    Edit `app/globals.css` to change the overlay colors:
+
+    ```css
+    :root {
+        /* Purple and cyan theme */
+        --color-overlay-primary: oklch(70% 0.25 280);  /* Purple */
+        --color-overlay-secondary: #00ffff;             /* Cyan */
+        --color-overlay-white: #ffffff;                 /* Pure white */
+    }
+    ```
+
+    These variables are automatically applied throughout the overlay components.
+  </Tab>
+
+  <Tab title="Component-Specific Colors">
+    Override colors directly in component files. For example, in `components/project-progress.tsx:4`:
+
+    ```typescript
+    const GREY_AZURE = "#510424";   // Progress bar background
+    const CYAN = "oklch(65.6% 0.241 354.308)";  // Progress bar fill
+    const LIGHT_GREY = "#f7f7f7";   // Text color
+    ```
+
+    Change these constants to customize the progress bar colors:
+
+    ```typescript
+    const DARK_BLUE = "#1a1a3e";     // Dark blue background
+    const BRIGHT_PINK = "#ff006e";   // Bright pink fill
+    const WHITE = "#ffffff";         // Pure white text
+    ```
+  </Tab>
+
+  <Tab title="Using Tailwind Colors">
+    You can use Tailwind's color utilities in component classes:
+
+    ```tsx
+    <div className="text-pink-500 bg-purple-900">
+        Custom colored content
+    </div>
+    ```
+
+    Or reference Tailwind colors in props:
+
+    ```tsx
+    <CurvedLoop
+        marqueeText="Your Name"
+        className="fill-blue-500!"
+    />
+    ```
+  </Tab>
+</Tabs>
+
+### Progress Bar Colors
+
+The `Progress` component accepts custom colors via props in `components/ui/progress.tsx:11`:
+
+```tsx
+<Progress
+    value={75}
+    indicatorColor="#00ff00"      // Green progress fill
+    backgroundColor="#1a1a1a"     // Dark background
+    className="h-12"
+/>
+```
+
+**Example from the codebase** (`components/project-progress.tsx:25`):
+
+```tsx
+<Progress
+    value={(completedIssues.length / issues.length) * 100}
+    className="h-12"
+    indicatorColor={CYAN}            // Fill color
+    backgroundColor={GREY_AZURE}     // Background color
+/>
+```
+
+## Typography Customization
+
+### Changing Fonts
+
+The overlay uses system fonts by default, but you can customize them:
+
+<Steps>
+  <Step title="Import Google Fonts">
+    In your page component, import the desired font:
+
+    ```tsx
+    import { Press_Start_2P } from "next/font/google";
+
+    const pressStart = Press_Start_2P({
+        weight: "400",
+        subsets: ["latin"],
+    });
+    ```
+  </Step>
+
+  <Step title="Apply the Font">
+    Use the font in your component:
+
+    ```tsx
+    <div className={pressStart.className}>
+        Your text here
+    </div>
+    ```
+  </Step>
+</Steps>
+
+### Text Sizes
+
+Adjust text sizes using Tailwind classes:
+
+```tsx
+{/* Default - from project-progress.tsx:22 */}
+<p className="text-overlay-primary mb-6 text-5xl">
+    Project Progress
+</p>
+
+{/* Larger */}
+<p className="text-overlay-primary mb-6 text-7xl font-bold">
+    Project Progress
+</p>
+
+{/* Smaller */}
+<p className="text-overlay-primary mb-4 text-3xl">
+    Project Progress
+</p>
+```
+
+## Animation Customization
+
+### Marquee Speed
+
+The `Marquee` component uses keyframe animations defined in `app/globals.css:7`:
+
+```css
+@theme inline {
+    --animate-marquee: marquee 15s linear infinite;   /* Adjust 15s */
+    --animate-marquee2: marquee2 15s linear infinite;
+}
+```
+
+**To speed up:** Change `15s` to a smaller value (e.g., `10s`)
+**To slow down:** Change `15s` to a larger value (e.g., `25s`)
+
+### Curved Loop Speed
+
+The `CurvedLoop` component (`app/name/page.tsx:6`) accepts a `speed` prop:
+
+```tsx
+<CurvedLoop
+    marqueeText=" ♥ Chris__Codes"
+    speed={2.2}        // Adjust this value
+    curveAmount={200}  // Adjust curve intensity
+    interactive        // Enable drag interaction
+    className="fill-pink-500!"
+/>
+```
+
+**Speed values:**
+- `1.0` - Slow
+- `2.2` - Default (moderate)
+- `5.0` - Fast
+
+### ASCII Text Effects
+
+The `ASCIIText` component (`app/background/page.tsx:5`) has customizable properties:
+
+```tsx
+<ASCIIText
+    text="Chat!"
+    textColor="oklch(65.6% 0.241 354.308)"  // Text color
+    asciiFontSize={8}                        // ASCII character size
+    textFontSize={200}                       // Source text size
+    planeBaseHeight={8}                      // 3D plane height
+    enableWaves={true}                       // Enable wave animation
+/>
+```
+
+<Tip>
+  **Performance tip**: Set `enableWaves={false}` to disable the wave animation and improve performance on lower-end systems.
+</Tip>
+
+## Component Props Customization
+
+### CurvedLoop Component
+
+Full props interface from `components/CurvedLoop.tsx:12`:
+
+```typescript
+interface CurvedLoopProps {
+    marqueeText?: string;      // Text to display
+    speed?: number;            // Animation speed (default: 2)
+    className?: string;        // CSS classes for styling
+    curveAmount?: number;      // Curve intensity (default: 400)
+    direction?: "left" | "right";  // Scroll direction
+    interactive?: boolean;     // Enable drag interaction (default: true)
+}
+```
+
+**Example variations:**
+
+<Tabs>
+  <Tab title="Flat Marquee">
+    ```tsx
+    <CurvedLoop
+        marqueeText="Flat scrolling text"
+        speed={3}
+        curveAmount={0}  // No curve = flat
+        direction="right"
+        className="fill-blue-400!"
+    />
+    ```
+  </Tab>
+
+  <Tab title="Extreme Curve">
+    ```tsx
+    <CurvedLoop
+        marqueeText="Super curved!"
+        speed={1.5}
+        curveAmount={600}  // Very curved
+        className="fill-purple-500!"
+    />
+    ```
+  </Tab>
+
+  <Tab title="Non-Interactive">
+    ```tsx
+    <CurvedLoop
+        marqueeText="Can't drag this"
+        speed={2}
+        interactive={false}  // Disable dragging
+        className="fill-green-500!"
+    />
+    ```
+  </Tab>
+</Tabs>
+
+### Project Progress Component
+
+Customize the progress display from `components/project-progress.tsx:17`:
+
+```tsx
+<ProjectProgress
+    text="My Custom Title"  // Change the heading
+    issues={issues}          // Your issues array
+/>
+```
+
+The component automatically:
+- Calculates completion percentage
+- Displays "X / Y Tasks completed"
+- Updates the progress bar
+
+**To customize the text format**, edit `components/project-progress.tsx:19`:
+
+```typescript
+// Default
+const completedText = `${completedIssues.length} / ${issues.length} Tasks completed`;
+
+// Percentage version
+const percentage = ((completedIssues.length / issues.length) * 100).toFixed(0);
+const completedText = `${percentage}% Complete`;
+
+// Remaining tasks
+const remaining = issues.length - completedIssues.length;
+const completedText = `${remaining} tasks remaining`;
+```
+
+## Layout Customization
+
+### Creating Custom Routes
+
+Create new overlay layouts by adding pages in the `app` directory:
+
+<Steps>
+  <Step title="Create a New Page">
+    Create `app/my-overlay/page.tsx`:
+
+    ```tsx
+    "use client";
+    import { useFetchIssuesInInterval } from "@/app/lib/hooks/useFetchIssuesInInterval";
+    import { ProjectProgress } from "@/components/project-progress";
+
+    export default function MyOverlay() {
+        const issues = useFetchIssuesInInterval(10000);
+
+        return (
+            <div className="flex h-screen w-full items-center justify-center bg-transparent">
+                <ProjectProgress text="My Stream" issues={issues || []} />
+            </div>
+        );
+    }
+    ```
+  </Step>
+
+  <Step title="Access Your Overlay">
+    Navigate to `http://localhost:3000/my-overlay` to see your custom layout.
+  </Step>
+</Steps>
+
+### Combining Multiple Components
+
+Create complex layouts by combining components:
+
+```tsx
+export default function ComplexOverlay() {
+    const issues = useFetchIssuesInInterval(10000);
+
+    return (
+        <div className="relative h-screen w-full">
+            {/* Background layer */}
+            <div className="absolute inset-0">
+                <ASCIIText text="Background" />
+            </div>
+
+            {/* Top marquee */}
+            <div className="absolute top-0 w-full">
+                <Marquee items={["Stream Title", "♣", "@YourHandle"]} />
+            </div>
+
+            {/* Bottom progress */}
+            <div className="absolute bottom-10 w-full px-8">
+                {issues && <ProjectProgress text="Progress" issues={issues} />}
+            </div>
+        </div>
+    );
+}
+```
+
+## Responsive Design
+
+The overlay is designed for fixed-size browser sources, but you can add responsive behavior:
+
+```tsx
+<div className="
+    text-4xl          /* Default size */
+    lg:text-5xl       /* Larger screens */
+    xl:text-6xl       /* Extra large screens */
+">
+    Responsive Text
+</div>
+```
+
+## Advanced: Custom Tailwind Configuration
+
+For global styling changes, you can extend Tailwind's configuration. Create or edit `tailwind.config.js`:
+
+```javascript
+module.exports = {
+    theme: {
+        extend: {
+            colors: {
+                'stream-primary': '#ff006e',
+                'stream-secondary': '#00f5ff',
+            },
+            fontFamily: {
+                'display': ['Press Start 2P', 'monospace'],
+            },
+            animation: {
+                'spin-slow': 'spin 3s linear infinite',
+            },
+        },
+    },
+};
+```
+
+Then use your custom utilities:
+
+```tsx
+<div className="text-stream-primary font-display animate-spin-slow">
+    Custom styled content
+</div>
+```
+
+## Testing Your Customizations
+
+<Tabs>
+  <Tab title="Development Server">
+    ```bash
+    npm run dev
+    ```
+    
+    View changes at `http://localhost:3000/[your-route]`
+  </Tab>
+
+  <Tab title="Production Build">
+    ```bash
+    npm run build
+    npm run start
+    ```
+    
+    Test the production-optimized version
+  </Tab>
+</Tabs>
+
+<Warning>
+  Always test your overlay in OBS before going live! Colors and animations may appear differently in a browser source.
+</Warning>
+
+## Customization Examples
+
+### Example 1: Minimal Progress Bar
+
+```tsx
+export default function MinimalProgress() {
+    const issues = useFetchIssuesInInterval(30000);
+    
+    return (
+        <div className="flex h-screen items-end p-8">
+            {issues && (
+                <Progress
+                    value={(issues.filter(i => i.isCompleted).length / issues.length) * 100}
+                    indicatorColor="#00ff00"
+                    backgroundColor="rgba(0, 0, 0, 0.5)"
+                    className="h-4 w-full"
+                />
+            )}
+        </div>
+    );
+}
+```
+
+### Example 2: Retro Gaming Style
+
+```tsx
+import { Press_Start_2P } from "next/font/google";
+
+const pixelFont = Press_Start_2P({ weight: "400", subsets: ["latin"] });
+
+export default function RetroOverlay() {
+    const issues = useFetchIssuesInInterval(10000);
+
+    return (
+        <div className={`${pixelFont.className} p-8`}>
+            <div className="border-4 border-green-500 bg-black/80 p-6">
+                <h1 className="mb-4 text-2xl text-green-500">PROGRESS</h1>
+                {issues && (
+                    <Progress
+                        value={(issues.filter(i => i.isCompleted).length / issues.length) * 100}
+                        indicatorColor="#00ff00"
+                        backgroundColor="#003300"
+                        className="h-8"
+                    />
+                )}
+            </div>
+        </div>
+    );
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="OBS Setup" icon="video" href="/guides/obs-setup">
+    Add your customized overlay to OBS
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/types">
+    Explore all component props and options
+  </Card>
+</CardGroup>

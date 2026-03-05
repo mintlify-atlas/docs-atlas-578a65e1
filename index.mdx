@@ -1,97 +1,100 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Progress Overlay"
+description: "A configurable Twitch overlay that displays GitHub repository progress with animated visual components"
 ---
 
-## Setting up
+<img
+  className="block"
+  src="https://media.brand.dev/862e10d4-beb2-49d1-91ee-e52387c286bd.png"
+  alt="Progress Overlay"
+/>
 
-Get your documentation site up and running in minutes.
+## Overview
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+Progress Overlay is a Next.js application designed for streamers who want to display their GitHub project progress in real-time. Built with cutting-edge web technologies, it features stunning visual effects including ASCII art, curved marquee text, and animated overlays.
 
-## Make it yours
+Perfect for developers streaming their coding sessions on Twitch, Progress Overlay automatically fetches and displays GitHub issues as a progress tracker, making it easy for viewers to follow along with your development journey.
 
-Design a docs site that looks great and empowers your users.
+## Key Features
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Real-time GitHub Integration" icon="github">
+    Automatically fetch and display GitHub issues with live progress tracking
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Interactive ASCII Text" icon="wand-magic-sparkles">
+    3D ASCII text effects powered by Three.js with mouse interaction
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Curved Marquee Text" icon="arrows-rotate">
+    SVG-based curved text animation with drag-to-control interaction
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Animated Noise Effects" icon="signal-stream">
+    Customizable grain overlay effects for visual texture
   </Card>
-</Columns>
+  <Card title="Progress Visualization" icon="chart-line">
+    Beautiful progress bars with customizable colors and styling
+  </Card>
+  <Card title="OBS Compatible" icon="video">
+    Browser source ready for streaming software integration
+  </Card>
+</CardGroup>
 
-## Create beautiful pages
+## Quick Start
 
-Everything you need to create world-class documentation.
+Get up and running in minutes:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install dependencies and configure your environment
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+    Create your first overlay in under 5 minutes
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+## Components
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
+Explore the powerful visual components:
+
+<CardGroup cols={3}>
+  <Card title="ASCIIText" icon="cube" href="/components/ascii-text">
+    3D ASCII text renderer with shader effects
+  </Card>
+  <Card title="CurvedLoop" icon="rotate" href="/components/curved-loop">
+    Interactive curved marquee text
+  </Card>
+  <Card title="Noise" icon="tv" href="/components/noise">
+    Animated grain overlay
+  </Card>
+  <Card title="Progress" icon="bars-progress" href="/components/progress">
+    Customizable progress bar component
+  </Card>
+  <Card title="ProjectProgress" icon="list-check" href="/components/project-progress">
+    GitHub issue progress tracker
+  </Card>
+  <Card title="Overview" icon="grid-2" href="/components/overview">
+    Complete component reference
+  </Card>
+</CardGroup>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Stream Overlays" icon="twitch" iconType="brand">
+    Display your coding progress during live streams
+  </Card>
+  <Card title="Project Dashboards" icon="dashboard">
+    Create visual dashboards for project tracking
+  </Card>
+  <Card title="Portfolio Sites" icon="briefcase">
+    Showcase your projects with interactive effects
+  </Card>
+  <Card title="Event Displays" icon="presentation-screen">
+    Use for hackathons and coding events
+  </Card>
+</CardGroup>
+
+## Ready to Begin?
+
+<Card title="Get Started" icon="play" href="/introduction">
+  Learn the fundamentals and start building your overlay
 </Card>
