@@ -1,0 +1,78 @@
+{
+  "projectType": "frontend",
+  "projectName": "Progress Overlay",
+  "projectDescription": "A configurable Twitch overlay that displays GitHub repository progress with animated visual components",
+  "theme": "willow",
+  "primaryColor": "#7c7c7c",
+  "lightColor": "#070707",
+  "darkColor": "#c4c4c4",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "components/overview",
+              "components/ascii-text",
+              "components/curved-loop",
+              "components/noise",
+              "components/progress",
+              "components/project-progress"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/github-integration",
+              "guides/customization",
+              "guides/obs-setup"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core",
+            "pages": [
+              "api/types",
+              "api/actions",
+              "api/hooks"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Real-time GitHub issue tracking and display",
+    "Interactive ASCII text effects with Three.js",
+    "Curved SVG marquee text with drag interaction",
+    "Customizable progress visualization",
+    "Animated noise overlay effects",
+    "Browser source compatible for OBS/streaming"
+  ],
+  "publicApiSurface": [
+    "ASCIIText",
+    "CurvedLoop",
+    "Noise",
+    "ProjectProgress",
+    "Progress",
+    "useFetchIssuesInInterval",
+    "fetchIssues",
+    "githubIssuesToIssues",
+    "Issue",
+    "GithubIssue"
+  ]
+}
