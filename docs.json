@@ -65,7 +65,8 @@
             "pages": [
               "api/types",
               "api/actions",
-              "api/hooks"
+              "api/hooks",
+              "api/utils"
             ]
           }
         ]

@@ -1,0 +1,117 @@
+---
+title: 'Utilities'
+description: 'Utility functions for the Progress Overlay application'
+---
+
+## cn
+
+A utility function for merging Tailwind CSS class names with proper handling of conflicts.
+
+### Type Signature
+
+```typescript
+function cn(...inputs: ClassValue[]): string
+```
+
+### Parameters
+
+<ParamField path="inputs" type="ClassValue[]" required>
+  One or more class values to merge. Can be strings, objects, arrays, or conditional expressions.
+</ParamField>
+
+### Returns
+
+<ResponseField name="return" type="string">
+  A merged string of class names with conflicts resolved
+</ResponseField>
+
+### Usage Example
+
+```typescript
+import { cn } from "@/lib/utils";
+
+// Basic usage
+const className = cn("text-white", "bg-black");
+// Result: "text-white bg-black"
+
+// With conditional classes
+const buttonClass = cn(
+  "px-4 py-2 rounded",
+  isActive && "bg-blue-500",
+  isDisabled && "opacity-50 cursor-not-allowed"
+);
+
+// In a component
+<div className={cn("base-class", className, props.className)} />
+```
+
+### Implementation
+
+This function combines `clsx` for conditional class handling and `tailwind-merge` to properly resolve Tailwind CSS class conflicts (e.g., `text-sm` and `text-lg` won't both apply).
+
+```typescript lib/utils.ts
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
+```
+
+---
+
+## githubIssuesToIssues
+
+Converts a GitHub issue object to the simplified `Issue` format used throughout the application.
+
+### Type Signature
+
+```typescript
+function githubIssuesToIssues<T extends GithubIssue>(githubIssue: T): Issue
+```
+
+### Parameters
+
+<ParamField path="githubIssue" type="GithubIssue" required>
+  A GitHub issue object from the Octokit API response
+</ParamField>
+
+### Returns
+
+<ResponseField name="return" type="Issue">
+  A simplified issue object with `id`, `title`, and `isCompleted` fields
+</ResponseField>
+
+### Usage Example
+
+```typescript
+import { githubIssuesToIssues } from "@/lib/utils";
+import { GithubIssue, Issue } from "@/lib/types";
+
+const githubIssue: GithubIssue = {
+  id: 123,
+  state: "closed",
+  title: "Add authentication"
+};
+
+const issue: Issue = githubIssuesToIssues(githubIssue);
+// Result: { id: 123, title: "Add authentication", isCompleted: true }
+
+// Used with array mapping
+const issues = githubIssues.map(githubIssuesToIssues);
+```
+
+### Implementation
+
+```typescript lib/utils.ts
+export function githubIssuesToIssues<T extends GithubIssue>(githubIssue: T) {
+    const issue: Issue = {
+        id: githubIssue.id,
+        title: githubIssue.title,
+        isCompleted: githubIssue.state === "closed",
+    };
+    return issue;
+}
+```
+
+The function checks if the GitHub issue state is `"closed"` to determine the `isCompleted` boolean value.
